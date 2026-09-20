@@ -16,19 +16,25 @@ from PIL import Image
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-sys.path.insert(0, r"D:\temp\nonescape_repo\python")
+_this_dir = os.path.dirname(os.path.abspath(__file__))
+_vendor_pkg = os.path.join(_this_dir, "nonescape")
+if os.path.isdir(_vendor_pkg) and _this_dir not in sys.path:
+    sys.path.insert(0, _this_dir)
+elif not os.path.isdir(_vendor_pkg):
+    _legacy = os.getenv("NONESCAPE_SRC", "")
+    if _legacy and os.path.isdir(_legacy):
+        sys.path.insert(0, _legacy)
 
-# Keep HF downloads (dinov2 config) off C: (nearly full).
-os.environ.setdefault("HF_HOME", r"D:\temp\hf_cache")
-os.environ.setdefault("HF_HUB_CACHE", r"D:\temp\hf_cache\hub")
-os.environ.setdefault("HUGGINGFACE_HUB_CACHE", r"D:\temp\hf_cache\hub")
+os.environ.setdefault("HF_HOME", os.getenv("HF_HOME", "/app/hf_cache"))
+os.environ.setdefault("HF_HUB_CACHE", os.getenv("HF_HUB_CACHE", "/app/hf_cache/hub"))
+os.environ.setdefault("HUGGINGFACE_HUB_CACHE", os.getenv("HUGGINGFACE_HUB_CACHE", "/app/hf_cache/hub"))
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("nonescape")
 app = FastAPI(title="Nonescape AI-Image Detector")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 DEVICE = torch.device("cpu")
-WEIGHTS_PATH = os.getenv("NONESCAPE_WEIGHTS", r"D:\DeepGuard\weights\nonescape-v0.safetensors")
+WEIGHTS_PATH = os.getenv("NONESCAPE_WEIGHTS", os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "weights", "nonescape-v0.safetensors"))
 
 model = None
 

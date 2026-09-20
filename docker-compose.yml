@@ -1,19 +1,6 @@
-version: "3.9"
-
 services:
 
-  # ── Frontend (Nginx + React SPA) ─────────────────────────────────────────────
-  frontend:
-    image: nginx:alpine
-    ports:
-      - "8888:80"
-    volumes:
-      - ./frontend/dist:/usr/share/nginx/html:ro
-      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
-    depends_on:
-      - gateway
-
-  # ── FastAPI Gateway ───────────────────────────────────────────────────────────
+  # ── Gateway ──────────────────────────────────────────────────────────────────
   gateway:
     build:
       context: .
@@ -23,63 +10,142 @@ services:
     environment:
       - NPR_URL=http://npr:5001/detect
       - UFD_URL=http://ufd:5004/detect
-      - RAWNET_URL=http://rawnet:5002/detect
-      - CROSSVIT_URL=http://crossvit:7001/detect
+      - IAPL_URL=http://iapl:5005/detect
+      - SDXL_URL=http://sdxl:5009/detect
+      - UMM_URL=http://umm:5010/detect
+      - CAP_URL=http://capcheck:5011/detect
+      - NONE_URL=http://nonescape:5013/detect
+    volumes:
+      - gateway-logs:/app/logs
+      - gateway-thumbs:/app/thumbnails
     depends_on:
       - npr
       - ufd
-      - rawnet
-      - crossvit
+      - iapl
+      - sdxl
+      - umm
+      - capcheck
+      - nonescape
 
-  # ── NPR Image Model ───────────────────────────────────────────────────────────
+  # ── Frontend ─────────────────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - gateway
+
+  # ── All 7 models share the same image, different WORKDIR + CMD ──────────────
   npr:
+    image: verifyai-model
     build:
       context: .
       dockerfile: Dockerfile.model
-      args:
-        MODEL_DIR: models/npr
     ports:
       - "5001:5001"
+    working_dir: /app/models/npr
+    command: python -m uvicorn main:app --host 0.0.0.0 --port 5001
     volumes:
       - ./weights:/app/weights:ro
-    command: uvicorn main:app --host 0.0.0.0 --port 5001
+      - hf-cache:/app/hf_cache
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
 
-  
-  # ── UFD Image Model ───────────────────────────────────────────────────────────
   ufd:
-    build:
-      context: .
-      dockerfile: Dockerfile.model
-      args:
-        MODEL_DIR: models/ufd
+    image: verifyai-model
     ports:
       - "5004:5004"
+    working_dir: /app/models/ufd
+    command: python -m uvicorn main:app --host 0.0.0.0 --port 5004
     volumes:
       - ./weights:/app/weights:ro
-    command: uvicorn main:app --host 0.0.0.0 --port 5004
+      - hf-cache:/app/hf_cache
+      - clip-cache:/app/cache/clip
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
 
-  # ── RawNet2 Audio Model ────────────────────────────────────────────────────────
-  rawnet:
-    build:
-      context: .
-      dockerfile: Dockerfile.model
-      args:
-        MODEL_DIR: models/rawnet
+  iapl:
+    image: verifyai-model
     ports:
-      - "5002:5002"
+      - "5005:5005"
+    working_dir: /app/models/iapl
+    command: python -m uvicorn main:app --host 0.0.0.0 --port 5005
     volumes:
       - ./weights:/app/weights:ro
-    command: uvicorn main:app --host 0.0.0.0 --port 5002
+      - hf-cache:/app/hf_cache
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
 
-  # ── CrossEfficientViT Video Model ────────────────────────────────────────────
-  crossvit:
-    build:
-      context: .
-      dockerfile: Dockerfile.model
-      args:
-        MODEL_DIR: models/crossvit
+  sdxl:
+    image: verifyai-model
     ports:
-      - "7001:7001"
+      - "5009:5009"
+    working_dir: /app/models/sdxl_detector
+    command: python -m uvicorn main:app --host 0.0.0.0 --port 5009
+    volumes:
+      - hf-cache:/app/hf_cache
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  umm:
+    image: verifyai-model
+    ports:
+      - "5010:5010"
+    working_dir: /app/models/umm_maybe
+    command: python -m uvicorn main:app --host 0.0.0.0 --port 5010
+    volumes:
+      - hf-cache:/app/hf_cache
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  capcheck:
+    image: verifyai-model
+    ports:
+      - "5011:5011"
+    working_dir: /app/models/capcheck
+    command: python -m uvicorn main:app --host 0.0.0.0 --port 5011
+    volumes:
+      - hf-cache:/app/hf_cache
+
+  nonescape:
+    image: verifyai-model
+    ports:
+      - "5013:5013"
+    working_dir: /app/models/nonescape
+    command: python -m uvicorn main:app --host 0.0.0.0 --port 5013
     volumes:
       - ./weights:/app/weights:ro
-    command: uvicorn main:app --host 0.0.0.0 --port 7001
+      - hf-cache:/app/hf_cache
+
+volumes:
+  hf-cache:
+  clip-cache:
+  gateway-logs:
+  gateway-thumbs:

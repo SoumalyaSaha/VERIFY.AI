@@ -20,9 +20,9 @@ from transformers import AutoImageProcessor, AutoModelForImageClassification
 
 # Keep HF downloads in the in-repo cache (C: is nearly full).
 # Overridable via environment — launch scripts set HF_HOME explicitly.
-os.environ.setdefault("HF_HOME", r"D:\DeepGuard\hf_cache")
-os.environ.setdefault("HF_HUB_CACHE", r"D:\DeepGuard\hf_cache\hub")
-os.environ.setdefault("HUGGINGFACE_HUB_CACHE", r"D:\DeepGuard\hf_cache\hub")
+os.environ.setdefault("HF_HOME", os.getenv("HF_HOME", "/app/hf_cache"))
+os.environ.setdefault("HF_HUB_CACHE", os.getenv("HF_HUB_CACHE", "/app/hf_cache/hub"))
+os.environ.setdefault("HUGGINGFACE_HUB_CACHE", os.getenv("HUGGINGFACE_HUB_CACHE", "/app/hf_cache/hub"))
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("umm_maybe")

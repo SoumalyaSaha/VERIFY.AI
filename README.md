@@ -340,6 +340,55 @@ Cached on disk:
 
 ---
 
+## Docker Quick Start
+
+Verify.AI runs as **9 Docker containers** (7 models + gateway + frontend) using NVIDIA GPU.
+
+### Prerequisites
+- Docker Desktop with [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html)
+- NVIDIA GPU with **6 GB+ VRAM**
+- **15 GB** free disk space
+
+### One Command
+```bash
+git clone https://github.com/SoumalyaSaha/VERIFY.AI.git
+cd DeepGuard
+docker compose up -d
+```
+
+Open **http://localhost:3000** in your browser.
+
+### Services
+
+| Service | Port | Description |
+|---------|------|-------------|
+| Frontend | 3000 | Forensic dashboard UI |
+| Gateway | 8000 | FastAPI model orchestrator |
+| NPR | 5001 | Noise Pattern Recognition |
+| UFD | 5004 | Universal Fake Detection |
+| IAPL | 5005 | Inception Anomaly Detection |
+| SDXL | 5009 | Diffusion Artifact Detection |
+| UMM | 5010 | Error Variance Inversion |
+| CapCheck | 5011 | Caption Artifact Detection |
+| Nonescape | 5013 | Spectral Residual Analysis |
+
+### Useful Commands
+```bash
+# View logs
+docker compose logs -f gateway
+
+# Restart a single service
+docker compose restart ufd
+
+# Full rebuild
+docker compose up -d --build
+
+# Stop everything
+docker compose down
+```
+
+---
+
 ## Tech Stack
 
 | Layer | Technology |

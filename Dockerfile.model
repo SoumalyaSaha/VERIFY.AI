@@ -1,0 +1,28 @@
+FROM nvidia/cuda:12.1.1-runtime-ubuntu22.04
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    HF_HOME=/app/hf_cache \
+    HF_HUB_CACHE=/app/hf_cache/hub \
+    HUGGINGFACE_HUB_CACHE=/app/hf_cache/hub \
+    TORCH_HOME=/app/cache/torch
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        python3.11 python3.11-venv python3-pip ffmpeg libgl1 libglib2.0-0 \
+        libsndfile1 git && \
+    ln -sf /usr/bin/python3.11 /usr/bin/python && \
+    python3.11 -m pip install --upgrade pip && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY requirements.docker.txt /app/requirements.txt
+RUN python3.11 -m pip install -r requirements.txt
+
+COPY models/ /app/models/
+RUN mkdir -p /app/logs /app/hf_cache /app/cache/torch
+
+EXPOSE 5001
+
+CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5001"]

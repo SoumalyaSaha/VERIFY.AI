@@ -27,7 +27,7 @@ DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 WEIGHTS_PATH = os.getenv("WEIGHTS_PATH", "../../weights/ufd.pth")
 
 # Redirect torch hub cache to D: (C: is nearly full).
-os.environ.setdefault("TORCH_HOME", r"D:\temp\torch_cache")
+os.environ.setdefault("TORCH_HOME", os.getenv("TORCH_HOME", "/app/cache/torch"))
 
 clip_model = None
 preprocess = None
@@ -53,12 +53,35 @@ async def load_model():
     global clip_model, preprocess, classifier
 
     # ── Load CLIP backbone ───────────────────────────────────────────────────────
+    _clip_local = os.getenv("CLIP_PATH", "/app/weights/ViT-L-14.pt")
     try:
         import clip  # openai-clip package
-        clip_model, preprocess = clip.load("ViT-L/14", device=DEVICE,
-                                            download_root=r"D:\temp\clip_cache")
+        if os.path.exists(_clip_local):
+            import torchvision.transforms as T
+            _jit = torch.jit.load(_clip_local, map_location=DEVICE).eval()
+            class _CLIPLike(nn.Module):
+                def __init__(self, jit_model):
+                    super().__init__()
+                    self._m = jit_model
+                def encode_image(self, x):
+                    return self._m.encode_image(x)
+                def encode_text(self, x):
+                    return self._m.encode_text(x)
+            clip_model = _CLIPLike(_jit)
+            preprocess = T.Compose([
+                T.Resize(224, interpolation=T.InterpolationMode.BICUBIC),
+                T.CenterCrop(224),
+                T.ToTensor(),
+                T.Normalize((0.48145466, 0.4578275, 0.40821073),
+                            (0.26862954, 0.26130258, 0.27577711)),
+            ])
+            logger.info("CLIP ViT-L/14 loaded from local file ✓")
+        else:
+            clip_model, preprocess = clip.load("ViT-L/14", device=DEVICE,
+                                                download_root=os.getenv("CLIP_CACHE", "/app/cache/clip"))
         clip_model.eval()
-        logger.info("CLIP ViT-L/14 backbone loaded ✓")
+        if not hasattr(clip_model, 'encode_image'):
+            logger.info("CLIP ViT-L/14 backbone loaded ✓")
     except ImportError:
         logger.error(
             "openai-clip not installed. Run: pip install git+https://github.com/openai/CLIP.git"
