@@ -15,7 +15,7 @@
 
 ### Neural Consensus Visualization
 
-![Neural Depiction](neural-depiction.png)
+![Neural Depiction](nueral.gif)
 
 ### 7-Model Consensus Ensemble Voting
 
