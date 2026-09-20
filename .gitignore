@@ -1,0 +1,45 @@
+venv/
+node_modules/
+dist/
+__pycache__/
+*.pyc
+
+# Model weights (too large for GitHub)
+weights/
+*.pth
+*.safetensors
+*.pt
+*.bin
+
+# HuggingFace cache
+hf_cache/
+HF_HOME/
+
+# Torch / CLIP cache
+torch_cache/
+clip_cache/
+
+# Logs (generated at runtime)
+logs/
+
+# Test data
+test_data/
+dataset/
+
+# Thumbnails (generated at runtime)
+thumbnails/
+
+# Results (generated outputs)
+results/
+
+# Temp files
+tmp_*.json
+*.dll
+
+# Env
+.env
+
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store
