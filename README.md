@@ -1,6 +1,15 @@
-# VERIFY.AI — Deepfake Detection Gateway
+<p align="center"><img src="./logo_icon.svg" width="140"/></p>
 
-![Version](https://img.shields.io/badge/version-0.1.0-blue) ![OAS](https://img.shields.io/badge/OAS-3.1-green) ![Status](https://img.shields.io/badge/status-active-brightgreen) ![Models](https://img.shields.io/badge/models-7%20active-orange)
+<h1 align="center">VERIFY.AI</h1>
+
+<p align="center"><em>Forensic Synthetic Media Consensus — 7-Model Deepfake Detection Gateway.</em></p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/version-0.1.0-blue" alt="Version"/>
+  <img src="https://img.shields.io/badge/OAS-3.1-green" alt="OAS"/>
+  <img src="https://img.shields.io/badge/status-active-brightgreen" alt="Status"/>
+  <img src="https://img.shields.io/badge/models-7%20active-orange" alt="Models"/>
+</p>
 
 ![VERIFY.AI Landing Page](landing-page.png)
 
