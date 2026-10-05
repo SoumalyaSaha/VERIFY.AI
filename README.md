@@ -60,6 +60,12 @@ Image File
 
 ---
 
+## High-Level Architecture
+
+![High-Level Architecture Diagram](high-level-architecture.png)
+
+---
+
 ## Project Structure
 
 ```
@@ -147,7 +153,8 @@ D:\VERIFY.AI\
 ├── install_and_run.bat          ← one-click install & launch (Windows)
 ├── start_all.bat                ← quick restart all services (Windows)
 ├── start.sh                     ← Linux/Mac launcher
-└── architecture.svg             ← system architecture diagram
+├── architecture.svg             ← system architecture diagram
+└── high-level-architecture.png  ← high-level architecture diagram
 ```
 
 ---
